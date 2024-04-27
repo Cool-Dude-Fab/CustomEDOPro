@@ -1,4 +1,3 @@
-local SET_TG=0x27
 local s,id=GetID()
 -- T.G. Blade Blaster
 function c10000007.initial_effect(c)
