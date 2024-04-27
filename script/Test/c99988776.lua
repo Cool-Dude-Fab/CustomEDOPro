@@ -1,7 +1,7 @@
 -- Enemy Negation
 local SET_TEST=0x3220
 local s,id=GetID()
-function s.initial_effect(c)
+function c99999998.initial_effect
     c:SetType(EFFECT_TYPE_QUICK_O)
     c:SetCode(EVENT_FREE_CHAIN)
     c:SetProperty(EFFECT_FLAG_CARD_TARGET)
