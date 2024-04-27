@@ -69,7 +69,7 @@ end
 
 -- Tribute and Special Summon condition
 function c4440001.spcon(e,tp,eg,ep,ev,re,r,rp)
-    return Duel.GetTurnPlayer()==tp
+    return Duel.GetTurnPlayer()==tp or Duel.GetTurnPlayer()~=tp
 end
 
 -- Tribute cost
