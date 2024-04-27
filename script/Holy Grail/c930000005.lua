@@ -9,8 +9,8 @@ function s.initial_effect(c)
     e1:SetCode(EVENT_FREE_CHAIN)
     e1:SetProperty(EFFECT_FLAG_CARD_TARGET)
     e1:SetHintTiming(0,TIMINGS_CHECK_MONSTER+TIMING_END_PHASE)
-    e1:SetTarget(c10000000.target)
-    e1:SetOperation(c10000000.activate)
+    e1:SetTarget(s.target)
+    e1:SetOperation(s.activate)
     c:RegisterEffect(e1)
 end
 s.listed_series={SET_CUSTOM_CARD}
