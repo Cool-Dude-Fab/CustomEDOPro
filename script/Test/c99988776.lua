@@ -1,6 +1,7 @@
 -- Enemy Negation
-function c99988776.initial_effect(c)
-    -- Quick-Play Spell
+local SET_TEST=0x3220
+local s,id=GetID()
+function s.initial_effect(c)
     c:SetType(EFFECT_TYPE_QUICK_O)
     c:SetCode(EVENT_FREE_CHAIN)
     c:SetProperty(EFFECT_FLAG_CARD_TARGET)
@@ -10,6 +11,7 @@ function c99988776.initial_effect(c)
     c:SetTarget(c99999998.target)
     c:SetOperation(c99999998.operation)
 end
+s.listed_series={SET_TEST}
 
 -- Activation condition (Can always activate)
 function c99999998.condition(e,tp,eg,ep,ev,re,r,rp)
