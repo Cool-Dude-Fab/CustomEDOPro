@@ -1,9 +1,5 @@
 --Chosen by the Holy Grail
-local SET_HOLYGRAIL=0xAD9C
-local SET_KNIGUARD=0xB1F3
-local SET_SHADOWBLADE=0xB64A
-local SET_WARFLAME=0xBAA1
-local CARD_UNHOLY_GRAIL=930000002
+local SET_CUSTOM_CARD=0x3220
 local s,id=GetID()
 function s.initial_effect(c)
 	-- (1) special summon (from hand)
