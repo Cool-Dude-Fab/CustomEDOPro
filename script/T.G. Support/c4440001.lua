@@ -42,12 +42,12 @@ function c4440001.initial_effect(c)
     c:RegisterEffect(e3)
 end
 
--- Destroy target condition
+-- Special Summon Condition
 function c4440001.descon(e,tp,eg,ep,ev,re,r,rp)
     return e:GetHandler():IsSummonType(SUMMON_TYPE_SYNCHRO)
 end
 
--- Destroy target target
+-- Destroy Target
 function c4440001.destg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
     if chkc then return chkc:IsLocation(LOCATION_ONFIELD) and chkc:IsControler(1-tp) end
     if chk==0 then return Duel.IsExistingTarget(nil,tp,0,LOCATION_ONFIELD,1,nil) end
@@ -66,26 +66,29 @@ end
 
 -- Protection Replace
 function c4440001.reptg(e,tp,eg,ep,ev,re,r,rp,chk)
-    if chk==0 then return Duel.IsExistingMatchingCard(c4440001.repfilter,tp,LOCATION_GRAVE,0,1,nil)
-        and Duel.CheckEvent(EVENT_DESTROYED, true) and Duel.IsChainNegatable(ev) end
-    local g=Duel.GetMatchingGroup(c4440001.repfilter, tp, LOCATION_MZONE, 0, nil)
-    return g:IsExists(c4440001.desfilter, 1, nil, e)
+    local dg=Duel.GetMatchingGroup(aux.TRUE,tp,LOCATION_MZONE,0,nil)
+    if chk==0 then return dg:IsExists(c4440001.repfilter,1,nil,tp) end
+    if Duel.SelectEffectYesNo(tp,e:GetHandler(),96) then
+        local g=Duel.SelectMatchingCard(tp,c4440001.repfilter,tp,LOCATION_GRAVE,0,1,1,nil)
+        Duel.Remove(g,POS_FACEUP,REASON_EFFECT)
+        return true
+    else
+        return false
+    end
+end
+
+function c4440001.repfilter(c,tp)
+    return c:IsControler(tp) and c:IsLocation(LOCATION_MZONE)
+        and c:IsSetCard(0x27) and c:IsType(TYPE_SYNCHRO) and c:IsAbleToRemove()
 end
 
 function c4440001.repval(e,c)
-    return c:IsControler(e:GetHandlerPlayer()) and c:IsLocation(LOCATION_MZONE) and c:IsSetCard(0x27) and c:IsType(TYPE_SYNCHRO)
-end
-
-function c4440001.repfilter(c)
-    return c:IsSetCard(0x27) and c:IsAbleToRemoveAsCost()
+    return c:IsControler(e:GetHandlerPlayer()) and c:IsLocation(LOCATION_MZONE)
+        and c:IsSetCard(0x27) and c:IsType(TYPE_SYNCHRO)
 end
 
 function c4440001.repop(e,tp,eg,ep,ev,re,r,rp)
-    Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
-    local g=Duel.SelectMatchingCard(tp,c4440001.repfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-    if g:GetCount()>0 then
-        Duel.Remove(g,POS_FACEUP,REASON_COST)
-    end
+    -- Additional protection code, if necessary
 end
 
 -- Set Spell/Trap Condition
