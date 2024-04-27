@@ -3,7 +3,7 @@ local s,id=GetID()
 function c4440001.initial_effect(c)
     -- Synchro Summon
     c:EnableReviveLimit()
-    aux.AddSynchroProcedure(c,aux.FilterBoolFunction(Card.IsType,TYPE_TUNER),1,1,aux.FilterBoolFunction(Card.IsType,TYPE_SYNCHRO),1,99)
+    Synchro.AddProcedure(c,aux.FilterBoolFunctionEx(Card.IsType,TYPE_TUNER),1,1,Synchro.NonTunerEx(Card.IsType,TYPE_SYNCHRO),1,99)
     
     -- Destroy target when Special Summoned
     local e1=Effect.CreateEffect(c)
