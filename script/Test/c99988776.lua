@@ -1,7 +1,7 @@
 -- Enemy Negation
 local SET_TEST=0x3220
 local s,id=GetID()
-function c99999998.initial_effect
+function s.initial_effect
     c:SetType(EFFECT_TYPE_QUICK_O)
     c:SetCode(EVENT_FREE_CHAIN)
     c:SetProperty(EFFECT_FLAG_CARD_TARGET)
@@ -14,12 +14,12 @@ end
 s.listed_series={SET_TEST}
 
 -- Activation condition (Can always activate)
-function c99999998.condition(e,tp,eg,ep,ev,re,r,rp)
+function s.condition(e,tp,eg,ep,ev,re,r,rp)
     return true
 end
 
 -- Target Function: Target 1 face-up monster your opponent controls
-function c99999998.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
+function s.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
     if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(1-tp) and chkc:IsFaceup() end
     if chk==0 then return Duel.IsExistingTarget(Card.IsFaceup,tp,0,LOCATION_MZONE,1,nil) end
     Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)
@@ -28,7 +28,7 @@ function c99999998.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 end
 
 -- Operation Function: Negate the effects of the targeted monster
-function c99999998.operation(e,tp,eg,ep,ev,re,r,rp)
+function s.operation(e,tp,eg,ep,ev,re,r,rp)
     local tc=Duel.GetFirstTarget()
     if tc:IsRelateToEffect(e) and tc:IsFaceup() then
         Duel.NegateRelatedChain(tc,RESET_TURN_SET)
