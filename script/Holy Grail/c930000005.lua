@@ -13,6 +13,7 @@ function s.initial_effect(c)
     e1:SetOperation(c10000000.activate)
     c:RegisterEffect(e1)
 end
+s.listed_series={SET_CUSTOM_CARD}
 
 -- Target function: Targets 1 face-up monster your opponent controls
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
