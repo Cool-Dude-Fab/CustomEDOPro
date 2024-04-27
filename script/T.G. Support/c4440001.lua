@@ -18,15 +18,19 @@ function c4440001.initial_effect(c)
     e1:SetCountLimit(1,4440001)
     c:RegisterEffect(e1)
 
-    -- Protection for "T.G." Synchro Monsters
+    -- Tribute and Special Summon from GY
     local e2=Effect.CreateEffect(c)
     e2:SetDescription(aux.Stringid(4440001,1))
-    e2:SetType(EFFECT_TYPE_CONTINUOUS+EFFECT_TYPE_FIELD)
-    e2:SetCode(EFFECT_DESTROY_REPLACE)
+    e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
+    e2:SetType(EFFECT_TYPE_QUICK_O)
+    e2:SetCode(EVENT_FREE_CHAIN)
     e2:SetRange(LOCATION_MZONE)
-    e2:SetTarget(c4440001.reptg)
-    e2:SetValue(c4440001.repval)
-    e2:SetOperation(c4440001.repop)
+    e2:SetHintTiming(0,TIMINGS_CHECK_MONSTER+TIMING_END_PHASE)
+    e2:SetCountLimit(1,4440001+100)
+    e2:SetCondition(c4440001.spcon)
+    e2:SetCost(c4440001.spcost)
+    e2:SetTarget(c4440001.sptg)
+    e2:SetOperation(c4440001.spop)
     c:RegisterEffect(e2)
 
     -- Set "T.G." Spell/Trap when banished
@@ -35,10 +39,9 @@ function c4440001.initial_effect(c)
     e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
     e3:SetCode(EVENT_REMOVE)
     e3:SetProperty(EFFECT_FLAG_DELAY)
-    e3:SetCondition(c4440001.setcond)
     e3:SetTarget(c4440001.settg)
     e3:SetOperation(c4440001.setop)
-    e3:SetCountLimit(1,4440001+100)
+    e3:SetCountLimit(1,4440001+200)
     c:RegisterEffect(e3)
 end
 
@@ -64,36 +67,35 @@ function c4440001.desop(e,tp,eg,ep,ev,re,r,rp)
     end
 end
 
--- Protection Replace
-function c4440001.reptg(e,tp,eg,ep,ev,re,r,rp,chk)
-    local dg=Duel.GetMatchingGroup(aux.TRUE,tp,LOCATION_MZONE,0,nil)
-    if chk==0 then return dg:IsExists(c4440001.repfilter,1,nil,tp) end
-    if Duel.SelectEffectYesNo(tp,e:GetHandler(),96) then
-        local g=Duel.SelectMatchingCard(tp,c4440001.repfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-        Duel.Remove(g,POS_FACEUP,REASON_EFFECT)
-        return true
-    else
-        return false
+-- Tribute and Special Summon condition
+function c4440001.spcon(e,tp,eg,ep,ev,re,r,rp)
+    return Duel.GetTurnPlayer()==tp
+end
+
+-- Tribute cost
+function c4440001.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
+    if chk==0 then return e:GetHandler():IsReleasable() end
+    Duel.Release(e:GetHandler(),REASON_COST)
+end
+
+-- Special Summon target
+function c4440001.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
+    if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
+        and Duel.IsExistingMatchingCard(c4440001.spfilter,tp,LOCATION_GRAVE,0,1,nil,e,tp) end
+    Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_GRAVE)
+end
+
+function c4440001.spfilter(c,e,tp)
+    return c:IsSetCard(0x27) and c:IsType(TYPE_SYNCHRO) and c:GetLevel()<=10 and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
+end
+
+-- Special Summon operation
+function c4440001.spop(e,tp,eg,ep,ev,re,r,rp)
+    Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+    local g=Duel.SelectMatchingCard(tp,c4440001.spfilter,tp,LOCATION_GRAVE,0,1,1,nil,e,tp)
+    if g:GetCount()>0 then
+        Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
     end
-end
-
-function c4440001.repfilter(c,tp)
-    return c:IsControler(tp) and c:IsLocation(LOCATION_MZONE)
-        and c:IsSetCard(0x27) and c:IsType(TYPE_SYNCHRO) and c:IsAbleToRemove()
-end
-
-function c4440001.repval(e,c)
-    return c:IsControler(e:GetHandlerPlayer()) and c:IsLocation(LOCATION_MZONE)
-        and c:IsSetCard(0x27) and c:IsType(TYPE_SYNCHRO)
-end
-
-function c4440001.repop(e,tp,eg,ep,ev,re,r,rp)
-    -- Additional protection code, if necessary
-end
-
--- Set Spell/Trap Condition
-function c4440001.setcond(e,tp,eg,ep,ev,re,r,rp)
-    return e:GetHandler():IsFaceup()
 end
 
 -- Set Spell/Trap Target
