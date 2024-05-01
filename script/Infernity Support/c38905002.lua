@@ -3,7 +3,7 @@ local s,id=GetID()
 function s.initial_effect(c)
     --Activate
     local e1=Effect.CreateEffect(c)
-    e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_SPECIAL_SUMMON)  -- Update category to include special summon
+    e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_SPECIAL_SUMMON)  -- Updated category for special summon
     e1:SetType(EFFECT_TYPE_ACTIVATE)
     e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
     e1:SetCode(EVENT_FREE_CHAIN)
@@ -29,18 +29,15 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
     local ct=Duel.SendtoGrave(g,REASON_EFFECT)
     if ct>0 then
         Duel.BreakEffect()
-        -- Special summon from Deck or GY up to the number of cards sent to the GY
-        for i=1,ct do
-            if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then break end
-            Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-            local sg=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(s.spfilter),tp,LOCATION_DECK+LOCATION_GRAVE,0,1,1,nil,e,tp)
-            if #sg>0 then
-                Duel.SpecialSummon(sg,0,tp,tp,false,false,POS_FACEUP)
-            end
+        -- Special summon from Deck 1 "Infernity" monster whose level is equal to the number of cards sent to the GY
+        Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+        local sg=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_DECK,0,1,1,nil,ct,e,tp)
+        if #sg>0 then
+            Duel.SpecialSummon(sg,0,tp,tp,false,false,POS_FACEUP)
         end
     end
 end
 
-function s.spfilter(c,e,tp)
-    return c:IsSetCard(0xb) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
+function s.spfilter(c,level,e,tp)
+    return c:IsSetCard(0xb) and c:IsLevel(level) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
