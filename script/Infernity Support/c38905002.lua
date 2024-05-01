@@ -3,6 +3,7 @@ local s,id=GetID()
 function s.initial_effect(c)
     --Always treated as an “Infernity” card
     c:SetUniqueOnField(1,0,id)
+    
     --Activate from hand
     local e1=Effect.CreateEffect(c)
     e1:SetType(EFFECT_TYPE_SINGLE)
@@ -13,7 +14,7 @@ function s.initial_effect(c)
     --Discard and Special Summon
     local e2=Effect.CreateEffect(c)
     e2:SetDescription(aux.Stringid(id,0))
-    e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
+    e2:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DISCARD)
     e2:SetType(EFFECT_TYPE_QUICK_O)
     e2:SetCode(EVENT_FREE_CHAIN)
     e2:SetRange(LOCATION_SZONE)
@@ -35,20 +36,23 @@ function s.initial_effect(c)
     c:RegisterEffect(e3)
 end
 
+-- Activation from hand condition
 function s.handcon(e)
     return Duel.IsExistingMatchingCard(aux.FilterFaceupFunction(Card.IsSetCard,0xb),e:GetHandlerPlayer(),LOCATION_MZONE,0,1,nil)
 end
 
+-- Special Summon condition
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
     return Duel.IsExistingMatchingCard(aux.FilterFaceupFunction(Card.IsSetCard,0xb),tp,LOCATION_MZONE,0,1,nil)
 end
 
+-- Discard and Special Summon target
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then return Duel.IsPlayerCanDiscardDeck(tp,1) end
-    local ct=Duel.GetFieldGroupCount(tp,LOCATION_HAND,0)
     Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,0,LOCATION_DECK)
 end
 
+-- Discard and Special Summon operation
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
     local ct=Duel.DiscardHand(tp,nil,1,60,REASON_EFFECT+REASON_DISCARD)
     if ct>0 then
@@ -64,10 +68,12 @@ function s.spfilter(c,lv)
     return c:IsSetCard(0xb) and c:IsLevel(lv) and c:IsCanBeSpecialSummoned()
 end
 
+-- Add Spell/Trap condition
 function s.thcon(e,tp,eg,ep,ev,re,r,rp)
     return rp~=tp and e:GetHandler():IsPreviousLocation(LOCATION_SZONE)
 end
 
+-- Add Spell/Trap target
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil) end
     Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
@@ -77,6 +83,7 @@ function s.thfilter(c)
     return c:IsSetCard(0xb) and c:IsType(TYPE_SPELL+TYPE_TRAP) and not c:IsCode(id) and c:IsAbleToHand()
 end
 
+-- Add Spell/Trap operation
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
     Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
     local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_DECK,0,1,1,nil)
