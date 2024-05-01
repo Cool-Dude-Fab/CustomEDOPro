@@ -34,8 +34,11 @@ end
 function s.discardop(e,tp,eg,ep,ev,re,r,rp)
 	local g=Duel.GetMatchingGroup(Card.IsDiscardable,tp,LOCATION_HAND,0,nil)
 	if #g>0 then
-		Duel.DiscardHand(tp,aux.TRUE,1,#g,REASON_EFFECT+REASON_DISCARD)
+		local ct=Duel.DiscardHand(tp,aux.TRUE,1,#g,REASON_EFFECT+REASON_DISCARD)
+		if ct==0 then
+			Duel.Hint(HINT_MESSAGE, tp, "No cards were discarded.")
+		end
 	else
-		Duel.Hint(HINT_MESSAGE, tp, HINTMSG_ATLEASTONE)
+		Duel.Hint(HINT_MESSAGE, tp, "No discardable cards are available.")
 	end
 end
