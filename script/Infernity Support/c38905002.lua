@@ -4,39 +4,27 @@ function s.initial_effect(c)
     --Always treated as an "Infernity" card
     c:SetUniqueOnField(1,0,id)
 
-    --Activate from hand
+    --Discard and Special Summon
     local e1=Effect.CreateEffect(c)
-    e1:SetType(EFFECT_TYPE_SINGLE)
-    e1:SetCode(EFFECT_TRAP_ACT_IN_HAND)
-    e1:SetCondition(s.handcon)
+    e1:SetDescription(aux.Stringid(id,0))
+    e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
+    e1:SetType(EFFECT_TYPE_QUICK_O)
+    e1:SetCode(EVENT_FREE_CHAIN)
+    e1:SetRange(LOCATION_SZONE)
+    e1:SetCountLimit(1)
+    e1:SetTarget(s.sptg)
+    e1:SetOperation(s.spop)
     c:RegisterEffect(e1)
 
-    --Discard and Special Summon
-    local e2=Effect.CreateEffect(c)
-    e2:SetDescription(aux.Stringid(id,0))
-    e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
-    e2:SetType(EFFECT_TYPE_QUICK_O)
-    e2:SetCode(EVENT_FREE_CHAIN)
-    e2:SetRange(LOCATION_SZONE)
-    e2:SetCountLimit(1)
-    e2:SetTarget(s.sptg)
-    e2:SetOperation(s.spop)
-    c:RegisterEffect(e2)
-
     --Add 1 “Infernity” Spell/Trap from your Deck
-    local e3=Effect.CreateEffect(c)
-    e3:SetDescription(aux.Stringid(id,1))
-    e3:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
-    e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
-    e3:SetCode(EVENT_DESTROYED)
-    e3:SetTarget(s.thtg)
-    e3:SetOperation(s.thop)
-    c:RegisterEffect(e3)
-end
-
-function s.handcon(e)
-    local tp=e:GetHandlerPlayer()
-    return Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsSetCard,0xb),tp,LOCATION_MZONE,0,1,nil)
+    local e2=Effect.CreateEffect(c)
+    e2:SetDescription(aux.Stringid(id,1))
+    e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
+    e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
+    e2:SetCode(EVENT_DESTROYED)
+    e2:SetTarget(s.thtg)
+    e2:SetOperation(s.thop)
+    c:RegisterEffect(e2)
 end
 
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
