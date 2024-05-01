@@ -13,7 +13,7 @@ function s.initial_effect(c)
     --Discard and Special Summon
     local e2=Effect.CreateEffect(c)
     e2:SetDescription(aux.Stringid(id,0))
-    e2:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DISCARD)
+    e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
     e2:SetType(EFFECT_TYPE_QUICK_O)
     e2:SetCode(EVENT_FREE_CHAIN)
     e2:SetRange(LOCATION_SZONE)
@@ -45,12 +45,12 @@ end
 
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then return Duel.IsPlayerCanDiscardDeck(tp,1) end
-    Duel.SetOperationInfo(0,CATEGORY_DISCARD,nil,0,tp,1)
+    local ct=Duel.GetFieldGroupCount(tp,LOCATION_HAND,0)
     Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,0,LOCATION_DECK)
 end
 
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
-    local ct=Duel.DiscardHand(tp,aux.TRUE,1,60,REASON_DISCARD+REASON_EFFECT)
+    local ct=Duel.DiscardHand(tp,nil,1,60,REASON_EFFECT+REASON_DISCARD)
     if ct>0 then
         Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
         local g=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_DECK,0,1,1,nil,ct)
