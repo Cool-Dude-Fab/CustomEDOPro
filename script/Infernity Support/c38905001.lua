@@ -72,13 +72,15 @@ function s.setop(e,tp,eg,ep,ev,re,r,rp)
     local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(s.stfilter),tp,LOCATION_DECK+LOCATION_GRAVE,0,1,1,nil,e,tp)
     if #g>0 then
         Duel.SSet(tp,g)
-        if g:GetFirst():IsType(TYPE_QUICKPLAY+TYPE_TRAP) then
+        Duel.ConfirmCards(1-tp,g)
+        local tc=g:GetFirst()
+        if tc:IsType(TYPE_QUICKPLAY+TYPE_TRAP) then
             local e1=Effect.CreateEffect(e:GetHandler())
             e1:SetType(EFFECT_TYPE_SINGLE)
             e1:SetCode(EFFECT_QP_ACT_IN_SET_TURN)
             e1:SetProperty(EFFECT_FLAG_SET_AVAILABLE)
             e1:SetReset(RESET_EVENT+RESETS_STANDARD)
-            g:GetFirst():RegisterEffect(e1)
+            tc:RegisterEffect(e1)
         end
     end
 end
