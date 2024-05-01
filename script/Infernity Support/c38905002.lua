@@ -45,7 +45,7 @@ end
 
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then 
-        return Duel.IsExistingMatchingCard(Card.IsAbleToGrave,tp,LOCATION_HAND,0,1,e:GetHandler()) and
+        return Duel.IsExistingMatchingCard(Card.IsAbleToGrave,tp,LOCATION_HAND,0,1,nil) and
                Duel.GetLocationCount(tp,LOCATION_MZONE)>0
     end
     Duel.SetTargetPlayer(tp)
@@ -76,4 +76,6 @@ function s.thcon(e,tp,eg,ep,ev,re,r,rp)
     return not e:GetHandler():IsReason(REASON_RETURN)
 end
 
-function s.thtg(e,tp,eg,ep,ev,re,r,
+function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
+    if chk==0 then return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_DECK,0,1,nil) end
+   
