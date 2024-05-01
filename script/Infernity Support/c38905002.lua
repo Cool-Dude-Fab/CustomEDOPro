@@ -14,12 +14,11 @@ function s.initial_effect(c)
     --Discard and Special Summon
     local e2=Effect.CreateEffect(c)
     e2:SetDescription(aux.Stringid(id,0))
-    e2:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DISCARD)
+    e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
     e2:SetType(EFFECT_TYPE_QUICK_O)
     e2:SetCode(EVENT_FREE_CHAIN)
     e2:SetRange(LOCATION_SZONE)
     e2:SetCountLimit(1)
-    e2:SetCondition(s.spcon)
     e2:SetTarget(s.sptg)
     e2:SetOperation(s.spop)
     c:RegisterEffect(e2)
@@ -35,19 +34,15 @@ function s.initial_effect(c)
     c:RegisterEffect(e3)
 end
 
--- Hand activation condition
 function s.handcon(e)
     local tp=e:GetHandlerPlayer()
     return Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsSetCard,0xb),tp,LOCATION_MZONE,0,1,nil)
 end
 
--- Special Summon condition
-function s.spcon(e,tp,eg,ep,ev,re,r,rp)
-    return Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsSetCard,0xb),tp,LOCATION_MZONE,0,1,nil)
-end
-
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-    if chk==0 then return Duel.IsPlayerCanDiscardDeck(tp,1) and Duel.GetLocationCount(tp,LOCATION_MZONE)>0 end
+    if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
+        and Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp)
+        and Duel.IsPlayerCanDiscardHand(tp) end
     Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
 
@@ -55,15 +50,15 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
     local ct=Duel.DiscardHand(tp,nil,1,60,REASON_EFFECT+REASON_DISCARD)
     if ct>0 then
         Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-        local g=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_DECK,0,1,1,nil,ct)
+        local g=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
         if #g>0 then
             Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
         end
     end
 end
 
-function s.spfilter(c,lv)
-    return c:IsSetCard(0xb) and c:IsLevel(lv) and c:IsCanBeSpecialSummoned()
+function s.spfilter(c,e,tp)
+    return c:IsSetCard(0xb) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
 
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
