@@ -11,17 +11,24 @@ function s.initial_effect(c)
     e1:SetOperation(s.activate)
     c:RegisterEffect(e1)
 
-    --Add from deck to hand
+    --Activate from hand
     local e2=Effect.CreateEffect(c)
-    e2:SetDescription(aux.Stringid(id,1))
-    e2:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
-    e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
-    e2:SetProperty(EFFECT_FLAG_DELAY+EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DAMAGE_CAL)
-    e2:SetCode(EVENT_TO_GRAVE)
-    e2:SetCondition(s.thcon)
-    e2:SetTarget(s.thtg)
-    e2:SetOperation(s.thop)
+    e2:SetType(EFFECT_TYPE_SINGLE)
+    e2:SetCode(EFFECT_TRAP_ACT_IN_HAND)
+    e2:SetCondition(s.handcon)
     c:RegisterEffect(e2)
+
+    --Add from deck to hand
+    local e3=Effect.CreateEffect(c)
+    e3:SetDescription(aux.Stringid(id,1))
+    e3:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
+    e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
+    e3:SetProperty(EFFECT_FLAG_DELAY+EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DAMAGE_CAL)
+    e3:SetCode(EVENT_TO_GRAVE)
+    e3:SetCondition(s.thcon)
+    e3:SetTarget(s.thtg)
+    e3:SetOperation(s.thop)
+    c:RegisterEffect(e3)
 end
 
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
@@ -73,4 +80,8 @@ function s.thop(e,tp,eg,ep,ev,re,r,rp)
         Duel.SendtoHand(g,nil,REASON_EFFECT)
         Duel.ConfirmCards(1-tp,g)
     end
+end
+
+function s.handcon(e)
+    return Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsSetCard,0xb),e:GetHandlerPlayer(),LOCATION_MZONE,0,1,nil)
 end
