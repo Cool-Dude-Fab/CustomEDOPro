@@ -3,7 +3,7 @@ local s,id=GetID()
 function s.initial_effect(c)
     --Activate
     local e1=Effect.CreateEffect(c)
-    e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_SPECIAL_SUMMON)  -- Updated to include special summon
+    e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_SPECIAL_SUMMON)  -- Update category to include special summon
     e1:SetType(EFFECT_TYPE_ACTIVATE)
     e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
     e1:SetCode(EVENT_FREE_CHAIN)
@@ -14,8 +14,7 @@ end
 
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then 
-        return Duel.IsPlayerCanSpecialSummonMonster(tp,id+1,0,0x4011,1000,1000,4,RACE_WARRIOR,ATTRIBUTE_DARK) and
-               Duel.IsExistingMatchingCard(Card.IsAbleToGrave,tp,LOCATION_HAND,0,1,e:GetHandler()) and
+        return Duel.IsExistingMatchingCard(Card.IsAbleToGrave,tp,LOCATION_HAND,0,1,e:GetHandler()) and
                Duel.GetLocationCount(tp,LOCATION_MZONE)>0
     end
     Duel.SetTargetPlayer(tp)
@@ -28,12 +27,20 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
     local g=Duel.SelectMatchingCard(p,Card.IsAbleToGrave,p,LOCATION_HAND,0,1,63,nil)
     if #g==0 then return end
     local ct=Duel.SendtoGrave(g,REASON_EFFECT)
-    Duel.BreakEffect()
-    if ct>0 and Duel.GetLocationCount(tp,LOCATION_MZONE)>=ct then
+    if ct>0 then
+        Duel.BreakEffect()
+        -- Special summon from Deck or GY up to the number of cards sent to the GY
         for i=1,ct do
-            local token=Duel.CreateToken(tp,id+1)
-            Duel.SpecialSummonStep(token,0,tp,tp,false,false,POS_FACEUP)
+            if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then break end
+            Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+            local sg=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(s.spfilter),tp,LOCATION_DECK+LOCATION_GRAVE,0,1,1,nil,e,tp)
+            if #sg>0 then
+                Duel.SpecialSummon(sg,0,tp,tp,false,false,POS_FACEUP)
+            end
         end
-        Duel.SpecialSummonComplete()
     end
+end
+
+function s.spfilter(c,e,tp)
+    return c:IsSetCard(0xb) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
