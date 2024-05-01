@@ -3,8 +3,7 @@ local s,id=GetID()
 function s.initial_effect(c)
     --Always treated as an "Infernity" card
     c:SetUniqueOnField(1,0,id)
-    c:IsSetCard(0xb)
-    
+
     --Activate from hand
     local e1=Effect.CreateEffect(c)
     e1:SetType(EFFECT_TYPE_SINGLE)
@@ -15,11 +14,12 @@ function s.initial_effect(c)
     --Discard and Special Summon
     local e2=Effect.CreateEffect(c)
     e2:SetDescription(aux.Stringid(id,0))
-    e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
+    e2:SetCategory(CATEGORY_SPECIAL_SUMMON+CATEGORY_DISCARD)
     e2:SetType(EFFECT_TYPE_QUICK_O)
     e2:SetCode(EVENT_FREE_CHAIN)
     e2:SetRange(LOCATION_SZONE)
     e2:SetCountLimit(1)
+    e2:SetCondition(s.spcon)
     e2:SetTarget(s.sptg)
     e2:SetOperation(s.spop)
     c:RegisterEffect(e2)
@@ -35,13 +35,20 @@ function s.initial_effect(c)
     c:RegisterEffect(e3)
 end
 
+-- Hand activation condition
 function s.handcon(e)
-    return Duel.IsExistingMatchingCard(aux.FilterFaceupFunction(Card.IsSetCard,0xb),e:GetHandlerPlayer(),LOCATION_MZONE,0,1,nil)
+    local tp=e:GetHandlerPlayer()
+    return Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsSetCard,0xb),tp,LOCATION_MZONE,0,1,nil)
+end
+
+-- Special Summon condition
+function s.spcon(e,tp,eg,ep,ev,re,r,rp)
+    return Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsSetCard,0xb),tp,LOCATION_MZONE,0,1,nil)
 end
 
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-    if chk==0 then return Duel.IsPlayerCanDiscardDeck(tp,1) end
-    Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,0,LOCATION_DECK)
+    if chk==0 then return Duel.IsPlayerCanDiscardDeck(tp,1) and Duel.GetLocationCount(tp,LOCATION_MZONE)>0 end
+    Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
 
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
