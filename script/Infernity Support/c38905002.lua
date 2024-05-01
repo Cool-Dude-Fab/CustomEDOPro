@@ -1,8 +1,10 @@
 --Enforcers, Together Forever!
 local s,id=GetID()
 function s.initial_effect(c)
-    --Always treated as an “Infernity” card
+    --Always treated as an "Infernity" card
     c:SetUniqueOnField(1,0,id)
+    c:IsSetCard(0xb)
+    
     --Activate from hand
     local e1=Effect.CreateEffect(c)
     e1:SetType(EFFECT_TYPE_SINGLE)
@@ -18,7 +20,6 @@ function s.initial_effect(c)
     e2:SetCode(EVENT_FREE_CHAIN)
     e2:SetRange(LOCATION_SZONE)
     e2:SetCountLimit(1)
-    e2:SetCondition(s.spcon)
     e2:SetTarget(s.sptg)
     e2:SetOperation(s.spop)
     c:RegisterEffect(e2)
@@ -29,7 +30,6 @@ function s.initial_effect(c)
     e3:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
     e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
     e3:SetCode(EVENT_DESTROYED)
-    e3:SetCondition(s.thcon)
     e3:SetTarget(s.thtg)
     e3:SetOperation(s.thop)
     c:RegisterEffect(e3)
@@ -37,10 +37,6 @@ end
 
 function s.handcon(e)
     return Duel.IsExistingMatchingCard(aux.FilterFaceupFunction(Card.IsSetCard,0xb),e:GetHandlerPlayer(),LOCATION_MZONE,0,1,nil)
-end
-
-function s.spcon(e,tp,eg,ep,ev,re,r,rp)
-    return Duel.IsExistingMatchingCard(aux.FilterFaceupFunction(Card.IsSetCard,0xb),tp,LOCATION_MZONE,0,1,nil)
 end
 
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
@@ -61,10 +57,6 @@ end
 
 function s.spfilter(c,lv)
     return c:IsSetCard(0xb) and c:IsLevel(lv) and c:IsCanBeSpecialSummoned()
-end
-
-function s.thcon(e,tp,eg,ep,ev,re,r,rp)
-    return rp~=tp and e:GetHandler():IsPreviousLocation(LOCATION_SZONE)
 end
 
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
