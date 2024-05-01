@@ -25,7 +25,9 @@ function s.discardcon(e,tp,eg,ep,ev,re,r,rp)
 end
 
 function s.discardtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,nil,tp) end
+	if chk==0 then
+		return Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,nil)
+	end
 	Duel.SetOperationInfo(0,CATEGORY_DISCARD,nil,1,tp,LOCATION_HAND)
 end
 
@@ -33,5 +35,7 @@ function s.discardop(e,tp,eg,ep,ev,re,r,rp)
 	local g=Duel.GetMatchingGroup(Card.IsDiscardable,tp,LOCATION_HAND,0,nil)
 	if #g>0 then
 		Duel.DiscardHand(tp,aux.TRUE,1,#g,REASON_EFFECT+REASON_DISCARD)
+	else
+		Duel.Hint(HINT_MESSAGE, tp, HINTMSG_ATLEASTONE)
 	end
 end
