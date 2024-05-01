@@ -54,38 +54,31 @@ function s.tgop(e,tp,eg,ep,ev,re,r,rp)
 end
 
 function s.setcon(e,tp,eg,ep,ev,re,r,rp)
-    return Duel.IsExistingMatchingCard(Card.IsAbleToHand,tp,LOCATION_ONFIELD,0,1,e:GetHandler())
+    return Duel.GetFieldGroupCount(tp,LOCATION_HAND,0)==0
 end
 
 function s.settg(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then
-        return Duel.IsExistingMatchingCard(s.filter,tp,LOCATION_DECK+LOCATION_GRAVE,0,1,nil,true)
+        return Duel.IsExistingMatchingCard(s.stfilter,tp,LOCATION_DECK+LOCATION_GRAVE,0,1,nil,e,tp)
     end
-    Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,nil,1,tp,LOCATION_DECK+LOCATION_GRAVE)
 end
 
-function s.filter(c,checkloc)
-    return c:IsSetCard(0xb) and ((checkloc and c:IsLocation(LOCATION_GRAVE)) or c:IsSSetable()) and not c:IsPublic()
+function s.stfilter(c,e,tp)
+    return c:IsSetCard(0xb) and (c:IsType(TYPE_SPELL) or c:IsType(TYPE_TRAP)) and c:IsSSetable()
 end
 
 function s.setop(e,tp,eg,ep,ev,re,r,rp)
     Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SET)
-    local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(s.filter),tp,LOCATION_DECK+LOCATION_GRAVE,0,1,1,nil,false)
+    local g=Duel.SelectMatchingCard(tp,aux.NecroValleyFilter(s.stfilter),tp,LOCATION_DECK+LOCATION_GRAVE,0,1,1,nil,e,tp)
     if #g>0 then
-        local tc=g:GetFirst()
-        if tc:IsLocation(LOCATION_GRAVE) then
-            Duel.SSet(tp,tc)
-            Duel.ConfirmCards(1-tp,tc)
-        else
-            Duel.SSet(tp,tc)
-        end
-        if tc:IsType(TYPE_QUICKPLAY+TYPE_TRAP) and Duel.GetTurnPlayer()==tp then
+        Duel.SSet(tp,g)
+        if g:GetFirst():IsType(TYPE_QUICKPLAY+TYPE_TRAP) then
             local e1=Effect.CreateEffect(e:GetHandler())
             e1:SetType(EFFECT_TYPE_SINGLE)
             e1:SetCode(EFFECT_QP_ACT_IN_SET_TURN)
             e1:SetProperty(EFFECT_FLAG_SET_AVAILABLE)
             e1:SetReset(RESET_EVENT+RESETS_STANDARD)
-            tc:RegisterEffect(e1)
+            g:GetFirst():RegisterEffect(e1)
         end
     end
 end
