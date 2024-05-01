@@ -1,80 +1,89 @@
 --Magic Mallet Reimagined
 local s,id=GetID()
 function s.initial_effect(c)
-    -- Activation logic for the card
+    --Activate
     local e1=Effect.CreateEffect(c)
-    e1:SetCategory(CATEGORY_TOGRAVE + CATEGORY_SPECIAL_SUMMON)
+    e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_SPECIAL_SUMMON)
     e1:SetType(EFFECT_TYPE_ACTIVATE)
     e1:SetCode(EVENT_FREE_CHAIN)
+    e1:SetTarget(s.target)
+    e1:SetOperation(s.activate)
     c:RegisterEffect(e1)
 
-    -- Continuous effect that can activate from the field
+    -- Special Summon effect (Ignition effect on the field)
     local e2=Effect.CreateEffect(c)
     e2:SetDescription(aux.Stringid(id,0))
     e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
     e2:SetType(EFFECT_TYPE_QUICK_O)
-    e2:SetCode(EVENT_FREE_CHAIN)
     e2:SetRange(LOCATION_SZONE)
+    e2:SetCode(EVENT_FREE_CHAIN)
     e2:SetCountLimit(1, id)
     e2:SetCondition(s.spcon)
-    e2:SetCost(s.spcost)
     e2:SetTarget(s.sptarget)
     e2:SetOperation(s.spoperation)
     c:RegisterEffect(e2)
 
-    -- Hand activation condition
+    -- Activate from hand
     local e3=Effect.CreateEffect(c)
     e3:SetType(EFFECT_TYPE_SINGLE)
     e3:SetCode(EFFECT_TRAP_ACT_IN_HAND)
     e3:SetCondition(s.handcon)
     c:RegisterEffect(e3)
 
-    -- Graveyard effect to add Spell/Trap
+    -- Add from deck to hand when sent to GY
     local e4=Effect.CreateEffect(c)
     e4:SetDescription(aux.Stringid(id,1))
-    e4:SetCategory(CATEGORY_TOHAND + CATEGORY_SEARCH)
-    e4:SetType(EFFECT_TYPE_SINGLE + EFFECT_TYPE_TRIGGER_O)
+    e4:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
+    e4:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
     e4:SetCode(EVENT_TO_GRAVE)
-    e4:SetProperty(EFFECT_FLAG_DELAY)
+    e4:SetProperty(EFFECT_FLAG_DELAY+EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DAMAGE_CAL)
     e4:SetCondition(s.thcon)
     e4:SetTarget(s.thtg)
     e4:SetOperation(s.thop)
     c:RegisterEffect(e4)
 end
 
--- Condition to check if it's appropriate to activate the effect
-function s.spcon(e,tp,eg,ep,ev,re,r,rp)
-    return Duel.GetTurnPlayer()==tp or Duel.GetTurnPlayer()~=tp
-end
-
-function s.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-    if chk==0 then return Duel.IsExistingMatchingCard(Card.IsAbleToGraveAsCost,tp,LOCATION_HAND,0,1,nil) end
-    Duel.DiscardHand(tp,Card.IsAbleToGraveAsCost,1,1,REASON_COST)
-end
-
--- Target for sending to grave and potential summon
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
-    if chk==0 then
-        return Duel.IsExistingMatchingCard(Card.IsAbleToGrave,tp,LOCATION_HAND,0,1,nil) and
-               Duel.GetLocationCount(tp,LOCATION_MZONE)>0
+    if chk==0 then 
+        return Duel.IsExistingMatchingCard(Card.IsAbleToGrave,tp,LOCATION_HAND,0,1,nil)
     end
     Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_HAND)
 end
 
--- Activate to send to grave and potentially special summon
 function s.activate(e,tp,eg,ep,ev,re,r,rp)
-    local g=Duel.SelectMatchingCard(tp,Card.IsAbleToGrave,tp,LOCATION_HAND,0,1,63,nil)
+    local g=Duel.SelectMatchingCard(tp,Card.IsAbleToGrave,tp,LOCATION_HAND,0,1,99,nil)
     local ct=Duel.SendtoGrave(g,REASON_EFFECT)
-    if ct>0 and Duel.GetLocationCount(tp,LOCATION_MZONE)>0 then
-        local sg=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
-        if #sg>0 then
-            Duel.SpecialSummon(sg,0,tp,tp,false,false,POS_FACEUP)
-        end
+    if ct>0 then
+        Duel.BreakEffect()
+        s.spoperation(e,tp,eg,ep,ev,re,r,rp,ct)
     end
 end
 
-function s.spfilter(c,e,tp)
-    return c:IsSetCard(0xb) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
+function s.spcon(e,tp,eg,ep,ev,re,r,rp)
+    return Duel.GetTurnPlayer()==tp or Duel.GetTurnPlayer()~=tp
+end
+
+function s.sptarget(e,tp,eg,ep,ev,re,r,rp,chk)
+    local ct=e:GetLabel()
+    if chk==0 then
+        return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and
+               Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp,ct)
+    end
+    Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
+end
+
+function s.spoperation(e,tp,eg,ep,ev,re,r,rp,ct)
+    if not ct then ct=e:GetLabel() end  -- Retrieve the count if not provided directly
+    if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
+    Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+    local g=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp,ct)
+    if #g>0 then
+        Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
+    end
+end
+
+function s.spfilter(c,e,tp,ct)
+    return c:IsSetCard(0xb) and c:IsLevel(ct) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
 
 function s.handcon(e)
@@ -95,5 +104,10 @@ function s.thfilter(c)
 end
 
 function s.thop(e,tp,eg,ep,ev,re,r,rp)
-    Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_DECK,0,1,1,nil)
+    Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_ATOHAND)
+    local g=Duel.SelectMatchingCard(tp,s.thfilter,tp,LOCATION_DECK,0,1,1,nil)
+    if #g>0 then
+        Duel.SendtoHand(g,nil,REASON_EFFECT)
+        Duel.ConfirmCards(1-tp,g)
+    end
 end
