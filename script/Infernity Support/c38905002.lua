@@ -4,16 +4,22 @@ function s.initial_effect(c)
     --Always treated as an "Infernity" card
     c:SetUniqueOnField(1,0,id)
 
-    --Register activation of effect
+    --Activate: Discard and Special Summon
     local e1=Effect.CreateEffect(c)
     e1:SetDescription(aux.Stringid(id,0))
     e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
     e1:SetType(EFFECT_TYPE_IGNITION)
     e1:SetRange(LOCATION_SZONE)
     e1:SetCountLimit(1, id)
+    e1:SetCondition(s.spcon)
     e1:SetTarget(s.sptg)
     e1:SetOperation(s.spop)
     c:RegisterEffect(e1)
+end
+
+function s.spcon(e,tp,eg,ep,ev,re,r,rp)
+    -- Condition to activate: Optionally check for additional game states if needed
+    return true  -- Always true, adjust based on actual game conditions if necessary
 end
 
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
