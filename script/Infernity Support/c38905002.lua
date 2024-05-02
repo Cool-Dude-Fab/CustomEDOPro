@@ -18,7 +18,7 @@ function s.initial_effect(c)
     e2:SetCondition(s.handcon)
     c:RegisterEffect(e2)
 
-    --Banish from GY to add an Infernity Spell/Trap
+    --Banish to add Spell/Trap
     local e3=Effect.CreateEffect(c)
     e3:SetDescription(aux.Stringid(id,1))
     e3:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
@@ -28,12 +28,13 @@ function s.initial_effect(c)
     e3:SetCost(s.thcost)
     e3:SetTarget(s.thtg2)
     e3:SetOperation(s.thop2)
+    e3:SetCountLimit(1,id)
     c:RegisterEffect(e3)
 end
 
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then 
-        return Duel.IsExistingMatchingCard(Card.IsAbleToGrave,tp,LOCATION_HAND,0,1,e:GetHandler()) and
+        return Duel.IsExistingMatchingCard(Card.IsAbleToGrave,tp,LOCATION_HAND,0,1,nil) and
                Duel.GetLocationCount(tp,LOCATION_MZONE)>0
     end
     Duel.SetTargetPlayer(tp)
@@ -65,12 +66,20 @@ function s.handcon(e)
 end
 
 function s.thcon2(e,tp,eg,ep,ev,re,r,rp)
-    return Duel.GetFieldGroupCount(tp,LOCATION_HAND,0)==0 or not e:GetHandler():IsStatus(STATUS_TURN_SET)
+    return not e:GetHandler():IsReason(REASON_RETURN)
 end
 
 function s.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
-    if chk==0 then return e:GetHandler():IsAbleToRemoveAsCost() end
-    Duel.Remove(e:GetHandler(),POS_FACEUP,REASON_COST)
+    if chk==0 then return aux.bfgcost(e,tp,eg,ep,ev,re,r,rp,0) and 
+                        Duel.IsExistingMatchingCard(s.infbanfilter,tp,LOCATION_GRAVE,0,1,e:GetHandler()) end
+    aux.bfgcost(e,tp,eg,ep,ev,re,r,rp,1)
+    Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
+    local g=Duel.SelectMatchingCard(tp,s.infbanfilter,tp,LOCATION_GRAVE,0,1,1,nil)
+    Duel.Remove(g,POS_FACEUP,REASON_COST)
+end
+
+function s.infbanfilter(c)
+    return c:IsSetCard(0xb) and c:IsAbleToRemoveAsCost() and not c:IsCode(id)
 end
 
 function s.thtg2(e,tp,eg,ep,ev,re,r,rp,chk)
