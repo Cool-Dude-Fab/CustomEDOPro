@@ -1,4 +1,4 @@
---Magic Mallet Reimagined
+--Enforcers, Together Forever!
 local s,id=GetID()
 function s.initial_effect(c)
     --Activate
@@ -34,7 +34,7 @@ end
 
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then 
-        return Duel.IsExistingMatchingCard(Card.IsAbleToGrave,tp,LOCATION_HAND,0,1,nil) and
+        return Duel.IsExistingMatchingCard(Card.IsAbleToGrave,tp,LOCATION_HAND,0,1,e:GetHandler()) and
                Duel.GetLocationCount(tp,LOCATION_MZONE)>0
     end
     Duel.SetTargetPlayer(tp)
@@ -66,7 +66,10 @@ function s.handcon(e)
 end
 
 function s.thcon2(e,tp,eg,ep,ev,re,r,rp)
-    return not e:GetHandler():IsReason(REASON_RETURN)
+    return Duel.GetCurrentPhase()==PHASE_MAIN1 or Duel.GetCurrentPhase()==PHASE_MAIN2 and
+           e:GetHandler():IsLocation(LOCATION_GRAVE) and
+           Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsSetCard,0xb),tp,LOCATION_MZONE,0,1,nil) and
+           Duel.GetFieldGroupCount(tp,LOCATION_HAND,0)==0
 end
 
 function s.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
