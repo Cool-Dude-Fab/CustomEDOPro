@@ -1,11 +1,10 @@
---Enforcers, Together Forever!
+--Magic Mallet Reimagined
 local s,id=GetID()
 function s.initial_effect(c)
     --Activate
     local e1=Effect.CreateEffect(c)
     e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_SPECIAL_SUMMON)
     e1:SetType(EFFECT_TYPE_ACTIVATE)
-    e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
     e1:SetCode(EVENT_FREE_CHAIN)
     e1:SetTarget(s.target)
     e1:SetOperation(s.activate)
@@ -28,13 +27,20 @@ function s.initial_effect(c)
     e3:SetCost(s.thcost)
     e3:SetTarget(s.thtg2)
     e3:SetOperation(s.thop2)
-    e3:SetCountLimit(1,id)
+    e3:SetCountLimit(1,id+100)
     c:RegisterEffect(e3)
+
+    -- Track the turn the card was sent to the GY
+    local e4=Effect.CreateEffect(c)
+    e4:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_CONTINUOUS)
+    e4:SetCode(EVENT_TO_GRAVE)
+    e4:SetOperation(s.regop)
+    c:RegisterEffect(e4)
 end
 
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
     if chk==0 then 
-        return Duel.IsExistingMatchingCard(Card.IsAbleToGrave,tp,LOCATION_HAND,0,1,e:GetHandler()) and
+        return Duel.IsExistingMatchingCard(Card.IsAbleToGrave,tp,LOCATION_HAND,0,1,nil) and
                Duel.GetLocationCount(tp,LOCATION_MZONE)>0
     end
     Duel.SetTargetPlayer(tp)
@@ -69,7 +75,8 @@ function s.thcon2(e,tp,eg,ep,ev,re,r,rp)
     return Duel.GetCurrentPhase()==PHASE_MAIN1 or Duel.GetCurrentPhase()==PHASE_MAIN2 and
            e:GetHandler():IsLocation(LOCATION_GRAVE) and
            Duel.IsExistingMatchingCard(aux.FaceupFilter(Card.IsSetCard,0xb),tp,LOCATION_MZONE,0,1,nil) and
-           Duel.GetFieldGroupCount(tp,LOCATION_HAND,0)==0
+           Duel.GetFieldGroupCount(tp,LOCATION_HAND,0)==0 and
+           e:GetHandler():GetFlagEffect(id)==0
 end
 
 function s.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
@@ -100,5 +107,12 @@ function s.thop2(e,tp,eg,ep,ev,re,r,rp)
     if #g>0 then
         Duel.SendtoHand(g,nil,REASON_EFFECT)
         Duel.ConfirmCards(1-tp,g)
+    end
+end
+
+function s.regop(e,tp,eg,ep,ev,re,r,rp)
+    local c=e:GetHandler()
+    if not c:IsReason(REASON_RETURN) then
+        c:RegisterFlagEffect(id,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
     end
 end
