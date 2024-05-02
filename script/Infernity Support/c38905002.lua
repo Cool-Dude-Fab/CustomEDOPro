@@ -8,7 +8,6 @@ function s.initial_effect(c)
     e1:SetCode(EVENT_FREE_CHAIN)
     e1:SetTarget(s.target)
     e1:SetOperation(s.activate)
-    e1:SetCountLimit(1, id)
     c:RegisterEffect(e1)
 
     --Activate from hand
@@ -16,7 +15,6 @@ function s.initial_effect(c)
     e2:SetType(EFFECT_TYPE_SINGLE)
     e2:SetCode(EFFECT_TRAP_ACT_IN_HAND)
     e2:SetCondition(s.handcon)
-    e2:SetCountLimit(1, id)
     c:RegisterEffect(e2)
 
     --Banish to add Spell/Trap
@@ -38,7 +36,6 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
         return Duel.IsExistingMatchingCard(Card.IsAbleToGrave,tp,LOCATION_HAND,0,1,nil) and
                Duel.GetLocationCount(tp,LOCATION_MZONE)>0
     end
-    Duel.SetTargetPlayer(tp)
     Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_HAND)
 end
 
@@ -89,7 +86,7 @@ function s.thtg2(e,tp,eg,ep,ev,re,r,rp,chk)
 end
 
 function s.thfilter(c)
-    return c:IsSetCard(0xb) and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsAbleToHand()
+    return c:IsSetCard(0xb) and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsAbleToHand() and not c:IsCode(38905002)  -- Exclude this card by its ID
 end
 
 function s.thop2(e,tp,eg,ep,ev,re,r,rp)
