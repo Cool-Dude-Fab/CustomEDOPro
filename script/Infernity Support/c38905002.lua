@@ -30,7 +30,7 @@ function s.initial_effect(c)
     e3:SetCondition(s.handcon)
     c:RegisterEffect(e3)
 
-    -- Add from deck to hand when sent to GY
+    -- Add from deck to hand when sent to GY by a card effect
     local e4=Effect.CreateEffect(c)
     e4:SetDescription(aux.Stringid(id,1))
     e4:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
@@ -64,26 +64,24 @@ function s.spcon(e,tp,eg,ep,ev,re,r,rp)
 end
 
 function s.sptarget(e,tp,eg,ep,ev,re,r,rp,chk)
-    local ct=e:GetLabel()
     if chk==0 then
         return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 and
-               Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp,ct)
+               Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp)
     end
     Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
 
-function s.spoperation(e,tp,eg,ep,ev,re,r,rp,ct)
-    if not ct then ct=e:GetLabel() end  -- Retrieve the count if not provided directly
+function s.spoperation(e,tp,eg,ep,ev,re,r,rp)
     if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
     Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-    local g=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp,ct)
+    local g=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp)
     if #g>0 then
         Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
     end
 end
 
-function s.spfilter(c,e,tp,ct)
-    return c:IsSetCard(0xb) and c:IsLevel(ct) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
+function s.spfilter(c,e,tp)
+    return c:IsSetCard(0xb) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
 
 function s.handcon(e)
@@ -91,7 +89,7 @@ function s.handcon(e)
 end
 
 function s.thcon(e,tp,eg,ep,ev,re,r,rp)
-    return not e:GetHandler():IsReason(REASON_RETURN)
+    return e:GetHandler():IsReason(REASON_EFFECT) and not e:GetHandler():IsReason(REASON_RETURN)
 end
 
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
