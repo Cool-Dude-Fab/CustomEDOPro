@@ -5,10 +5,10 @@ function s.initial_effect(c)
     local e1=Effect.CreateEffect(c)
     e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_SPECIAL_SUMMON)
     e1:SetType(EFFECT_TYPE_ACTIVATE)
-    e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
     e1:SetCode(EVENT_FREE_CHAIN)
     e1:SetTarget(s.target)
     e1:SetOperation(s.activate)
+    e1:SetCountLimit(1, id)
     c:RegisterEffect(e1)
 
     --Activate from hand
@@ -16,6 +16,7 @@ function s.initial_effect(c)
     e2:SetType(EFFECT_TYPE_SINGLE)
     e2:SetCode(EFFECT_TRAP_ACT_IN_HAND)
     e2:SetCondition(s.handcon)
+    e2:SetCountLimit(1, id)
     c:RegisterEffect(e2)
 
     --Banish to add Spell/Trap
@@ -53,7 +54,6 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
         local sg=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_DECK,0,1,1,nil,ct,e,tp)
         if #sg>0 then
             Duel.SpecialSummon(sg,0,tp,tp,false,false,POS_FACEUP)
-            e:GetHandler():RegisterFlagEffect(id,RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END,0,1)
         end
     end
 end
@@ -67,7 +67,7 @@ function s.handcon(e)
 end
 
 function s.thcon2(e,tp,eg,ep,ev,re,r,rp)
-    return not e:GetHandler():IsReason(REASON_RETURN) and Duel.IsMainPhase() and e:GetHandler():GetFlagEffect(id)==0
+    return not e:GetHandler():IsReason(REASON_RETURN)
 end
 
 function s.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
