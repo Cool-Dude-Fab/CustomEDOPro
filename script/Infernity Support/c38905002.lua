@@ -3,11 +3,13 @@ local s,id=GetID()
 function s.initial_effect(c)
     --Activate
     local e1=Effect.CreateEffect(c)
+    e1:SetDescription(aux.Stringid(id,0))  -- Description for the first effect
     e1:SetCategory(CATEGORY_TOGRAVE+CATEGORY_SPECIAL_SUMMON)
     e1:SetType(EFFECT_TYPE_ACTIVATE)
     e1:SetCode(EVENT_FREE_CHAIN)
     e1:SetTarget(s.target)
     e1:SetOperation(s.activate)
+    e1:SetCountLimit(1, id)  -- Limit this effect and any other with this card's ID to once per turn
     c:RegisterEffect(e1)
 
     --Activate from hand
@@ -19,7 +21,7 @@ function s.initial_effect(c)
 
     --Banish to add Spell/Trap
     local e3=Effect.CreateEffect(c)
-    e3:SetDescription(aux.Stringid(id,1))
+    e3:SetDescription(aux.Stringid(id,1))  -- Description for the second effect
     e3:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
     e3:SetType(EFFECT_TYPE_IGNITION)
     e3:SetRange(LOCATION_GRAVE)
@@ -27,7 +29,7 @@ function s.initial_effect(c)
     e3:SetCost(s.thcost)
     e3:SetTarget(s.thtg2)
     e3:SetOperation(s.thop2)
-    e3:SetCountLimit(1, id)
+    e3:SetCountLimit(1, id)  -- Limit this effect and any other with this card's ID to once per turn
     c:RegisterEffect(e3)
 end
 
