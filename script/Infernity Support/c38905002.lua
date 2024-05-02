@@ -36,6 +36,7 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
         return Duel.IsExistingMatchingCard(Card.IsAbleToGrave,tp,LOCATION_HAND,0,1,nil) and
                Duel.GetLocationCount(tp,LOCATION_MZONE)>0
     end
+    Duel.SetTargetPlayer(tp)
     Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_HAND)
 end
 
@@ -43,14 +44,15 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
     local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)
     Duel.Hint(HINT_SELECTMSG,p,HINTMSG_TOGRAVE)
     local g=Duel.SelectMatchingCard(p,Card.IsAbleToGrave,p,LOCATION_HAND,0,1,63,nil)
-    if #g==0 then return end
-    local ct=Duel.SendtoGrave(g,REASON_EFFECT)
-    if ct>0 then
-        Duel.BreakEffect()
-        Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-        local sg=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_DECK,0,1,1,nil,ct,e,tp)
-        if #sg>0 then
-            Duel.SpecialSummon(sg,0,tp,tp,false,false,POS_FACEUP)
+    if #g>0 then
+        local ct=Duel.SendtoGrave(g,REASON_EFFECT)
+        if ct>0 then
+            Duel.BreakEffect()
+            Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+            local sg=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_DECK,0,1,1,nil,ct,e,tp)
+            if #sg>0 then
+                Duel.SpecialSummon(sg,0,tp,tp,false,false,POS_FACEUP)
+            end
         end
     end
 end
@@ -73,7 +75,9 @@ function s.thcost(e,tp,eg,ep,ev,re,r,rp,chk)
     aux.bfgcost(e,tp,eg,ep,ev,re,r,rp,1)
     Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
     local g=Duel.SelectMatchingCard(tp,s.infbanfilter,tp,LOCATION_GRAVE,0,1,1,nil)
-    Duel.Remove(g,POS_FACEUP,REASON_COST)
+    if #g>0 then
+        Duel.Remove(g,POS_FACEUP,REASON_COST)
+    end
 end
 
 function s.infbanfilter(c)
@@ -86,7 +90,7 @@ function s.thtg2(e,tp,eg,ep,ev,re,r,rp,chk)
 end
 
 function s.thfilter(c)
-    return c:IsSetCard(0xb) and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsAbleToHand() and not c:IsCode(38905002)  -- Exclude this card by its ID
+    return c:IsSetCard(0xb) and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsAbleToHand() and not c:IsCode(38905002)
 end
 
 function s.thop2(e,tp,eg,ep,ev,re,r,rp)
